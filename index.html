@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flappy Bird Simple</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    canvas { display: block; margin: auto; background: #70c5ce; }
+    body { background: #222; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="320" height="480"></canvas>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    let bird = { x: 50, y: 150, w: 20, h: 20, gravity: 0.6, lift: -10, velocity: 0 };
+    let pipes = [];
+    let score = 0;
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") bird.velocity = bird.lift;
+    });
+
+    function drawBird() {
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(bird.x, bird.y, bird.w, bird.h);
+    }
+
+    function drawPipes() {
+      ctx.fillStyle = "green";
+      pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, pipe.w, pipe.top);
+        ctx.fillRect(pipe.x, pipe.bottom, pipe.w, canvas.height - pipe.bottom);
+      });
+    }
+
+    function update() {
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y + bird.h > canvas.height || bird.y < 0) location.reload();
+
+      pipes.forEach((pipe, i) => {
+        pipe.x -= 2;
+        if (pipe.x + pipe.w < 0) {
+          pipes.splice(i, 1);
+          score++;
+        }
+        // tabrakan
+        if (
+          bird.x < pipe.x + pipe.w &&
+          bird.x + bird.w > pipe.x &&
+          (bird.y < pipe.top || bird.y + bird.h > pipe.bottom)
+        ) {
+          location.reload();
+        }
+      });
+
+      // tambahkan pipa
+      if (frameCount % 100 === 0) {
+        let top = Math.random() * 200 + 20;
+        let gap = 100;
+        pipes.push({
+          x: canvas.width,
+          w: 40,
+          top: top,
+          bottom: top + gap
+        });
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px sans-serif";
+      ctx.fillText("Score: " + score, 10, 25);
+    }
+
+    let frameCount = 0;
+    function gameLoop() {
+      frameCount++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      update();
+      drawBird();
+      drawPipes();
+      drawScore();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
